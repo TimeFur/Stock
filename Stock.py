@@ -81,15 +81,17 @@ class StockObj():
                        'date' : date,
                        'stockNo' : stock_id}
             r = requests.get(url, params = payload)
+            try:
+                #get the raw data
+                json_result = r.json()
+                for rawdata in json_result['data']:
+                    result_list.append(rawdata)
+                #print json_result['data']
 
-            #get the raw data
-            json_result = r.json()
-            for rawdata in json_result['data']:
-                result_list.append(rawdata)
-            #print json_result['data']
-
-            #move to the previous month
-            dateinfo = dateinfo - timedelta(days = 1)
+                #move to the previous month
+                dateinfo = dateinfo - timedelta(days = 1)
+            except:
+                pass
         #print result_list
         return result_list
     
@@ -105,11 +107,11 @@ class StockObj():
 
             time_obj=re.sub(r"\d+/",str(int(i[0][:i[0].find('/')])+1911)+"/",i[0],1)
             time=datetime.strptime(time_obj,"%Y/%m/%d")
+            if i[6] != '--':
+                self.stockdata[s_num][time_obj]=float(i[6])
 
-            self.stockdata[s_num][time_obj]=i[6]
-
-            time_list.append(time)
-            stock_list.append(i[6])
+                time_list.append(time)
+                stock_list.append(i[6])
 
         #plt.plot(time_list,stock_list)
         #plt.show()
@@ -180,11 +182,10 @@ class StockObj():
         RSV=0
         ex_RSV=0
 
-        while(len(list_key)>calday+count_day):
+        while(len(list_key) > calday+count_day):
             max_stock=0
             min_stock=0xFFFF
             avg_v=0.0
-
             for i in range(calday):
                 v=float(self.stockdata[s_num][list_key[i+count_day]])
                 avg_v = avg_v + v
@@ -195,29 +196,29 @@ class StockObj():
 
             avg_v = avg_v/calday
 
-        if(max_stock!=min_stock):
-            RSV=((self.stockdata[s_num][list_key[calday+count_day]]-min_stock)/(max_stock-min_stock))*100.0
-        else:
-            RSV=ex_RSV
-        ex_RSV=RSV
-        now_K=K*(2.0/3.0)+RSV*(1.0/3.0)
-        now_D=D*(2.0/3.0)+now_K*(1.0/3.0)
+            if(max_stock!=min_stock):
+                RSV=((self.stockdata[s_num][list_key[calday+count_day]]-min_stock)/(max_stock-min_stock))*100.0
+            else:
+                RSV=ex_RSV
+            ex_RSV=RSV
+            now_K=K*(2.0/3.0)+RSV*(1.0/3.0)
+            now_D=D*(2.0/3.0)+now_K*(1.0/3.0)
 
-        K=now_K
-        D=now_D
+            K=now_K
+            D=now_D
 
-        #yield "Date:%s CurStock=%f, RSV=%s, K=%f D=%f (min=%f, max=%f)" % (list_key[calday+count_day],self.stockdata[s_num][list_key[calday+count_day]], RSV, now_K, now_D, min_stock, max_stock),
+            #yield "Date:%s CurStock=%f, RSV=%s, K=%f D=%f (min=%f, max=%f)" % (list_key[calday+count_day],self.stockdata[s_num][list_key[calday+count_day]], RSV, now_K, now_D, min_stock, max_stock),
 
-        if self.InputData[s_num].has_key(list_key[calday+count_day]) == False:
-            self.InputData[s_num][list_key[calday+count_day]] = OrderedDict()
+            if self.InputData[s_num].has_key(list_key[calday+count_day]) == False:
+                self.InputData[s_num][list_key[calday+count_day]] = OrderedDict()
 
-        self.InputData[s_num][list_key[calday+count_day]]["CurStock"] = self.stockdata[s_num][list_key[calday+count_day]]
-        self.InputData[s_num][list_key[calday+count_day]]["RSV"] = RSV
-        self.InputData[s_num][list_key[calday+count_day]]["K"] = now_K
-        self.InputData[s_num][list_key[calday+count_day]]["D"] = now_D
-        self.InputData[s_num][list_key[calday+count_day]]["Avg"] = avg_v
+            self.InputData[s_num][list_key[calday+count_day]]["CurStock"] = self.stockdata[s_num][list_key[calday+count_day]]
+            self.InputData[s_num][list_key[calday+count_day]]["RSV"] = RSV
+            self.InputData[s_num][list_key[calday+count_day]]["K"] = now_K
+            self.InputData[s_num][list_key[calday+count_day]]["D"] = now_D
+            self.InputData[s_num][list_key[calday+count_day]]["Avg"] = avg_v
 
-        count_day=count_day+1
+            count_day=count_day+1
 
         return self.InputData
 
@@ -480,19 +481,19 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
 
 def main():
     training_month = 12
-    predict_date = "2017/04/12"
+    predict_date = "2017/09/12"
     RSI_caldate = 9
     KD_caldate = 9
-
+    '''
     s = StockObj(3)
-    s.stockGet("2330", 5)
+    s.stockGet("0059", 12)
     print s.stockdata
     '''
     StockFlow(_trainingmonth = training_month,
                 _predictdate = predict_date,
                 _RSIcaldate = RSI_caldate,
                 _KDcaldate = KD_caldate)
-    '''
+    
 if __name__=="__main__":
     main()
 
