@@ -108,6 +108,7 @@ class StockObj():
             time_obj=re.sub(r"\d+/",str(int(i[0][:i[0].find('/')])+1911)+"/",i[0],1)
             time=datetime.strptime(time_obj,"%Y/%m/%d")
             if i[6] != '--':
+                if i[6].find(',', '')
                 self.stockdata[s_num][time_obj]=float(i[6])
 
                 time_list.append(time)
