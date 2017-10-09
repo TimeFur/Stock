@@ -9,6 +9,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import copy
+import pickle
 
 from collections import OrderedDict
 from grs import Stock
@@ -50,7 +51,6 @@ class StockObj():
 
         self.machine=OrderedDict()
 
-
     def showStocknum(self):
         stock_all=[]
 
@@ -64,6 +64,31 @@ class StockObj():
 
         return stock_all
 
+    def stock_tracing(self, stock_id):
+        f_pkl_name = "stock.pkl"
+        stockdata = {}
+        #Tracing status
+        try:
+            f_pkl = open(f_pkl_name, 'rb')
+            stockdata = pickle.load(f_pkl)
+        except:
+            f_pkl = open(f_pkl_name, 'wb')
+        
+        if stockdata.has_key(stock_id) == False:
+            #create the new stock data
+            self.stockGet(stock_id, 12 * 3)
+            stockdata[stock_id] = self.stockdata[stock_id]
+        else:
+            #update the stock data
+            self.stockGet(stock_id, 1)
+            for date_key in self.stockdata[stock_id]:
+                stockdata[stock_id][date_key] = self.stockdata[stock_id][date_key]
+        
+        #Store data
+        f_pkl = open(f_pkl_name, 'wb')
+        pickle.dump(self.stockdata, f_pkl)
+        f_pkl.close()
+        
     def stock_url_parse(self, stock_id, month):
 
         url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"        
@@ -97,11 +122,16 @@ class StockObj():
     
     def stockGet(self, s_num, month):
 
+        
+        
+        #Get the exist data
+        
+        #Check the latest data in server
         stocklist = self.stock_url_parse(s_num, month)
-        time_list=[]
-        stock_list=[]
-
-        self.stockdata[s_num]=OrderedDict()
+        time_list = []
+        stock_list = []
+        
+        self.stockdata[s_num] = OrderedDict()
 
         for i in stocklist:
 
@@ -114,7 +144,10 @@ class StockObj():
 
                 time_list.append(time)
                 stock_list.append(i[6])
+        #Store the data
+        
 
+                
         #plt.plot(time_list,stock_list)
         #plt.show()
 
@@ -273,14 +306,14 @@ class StockObj():
 class ClassifyObj():
 
         def __init__ (self, Input, Output):
-                print "Classifier"
+            print "Classifier"
 
-                self.InputData=Input
-                self.OutputData=Output
+            self.InputData=Input
+            self.OutputData=Output
 
-                self.machine = OrderedDict()
+            self.machine = OrderedDict()
 
-                self.c_names = ["Nearest Neighbor",
+            self.c_names = ["Nearest Neighbor",
                          "Linear SVM", "RBF SVM", "Decision SVM",
                          "Decision Tree",
                          "Random Forest",
@@ -288,14 +321,14 @@ class ClassifyObj():
                          "Naive Bayes",
                          "Linear Discriminant Annlysis",
                          "Quadratic Discriminant Analysis"]
-                self.classifiers = [KNeighborsClassifier( 3 ),
-                                   SVC( kernel ="linear", C = 0.025 ), SVC(gamma = 2, C = 1),
-                                   DecisionTreeClassifier( max_depth = 5),
-                                   RandomForestClassifier( max_depth = 5, n_estimators = 10, max_features = 1),
-                                   AdaBoostClassifier(),
-                                   GaussianNB(),
-                                   LinearDiscriminantAnalysis(),
-                                   QuadraticDiscriminantAnalysis()]
+            self.classifiers = [KNeighborsClassifier( 3 ),
+                                SVC( kernel ="linear", C = 0.025 ), SVC(gamma = 2, C = 1),
+                                DecisionTreeClassifier( max_depth = 5),
+                                RandomForestClassifier( max_depth = 5, n_estimators = 10, max_features = 1),
+                                AdaBoostClassifier(),
+                                GaussianNB(),
+                                LinearDiscriminantAnalysis(),
+                                QuadraticDiscriminantAnalysis()]
 
         def training_each_classifiers(self, Stock_id):
                 done_flag = 0
@@ -487,16 +520,24 @@ def main():
     predict_date = "2017/09/12"
     RSI_caldate = 9
     KD_caldate = 9
-    '''
+    
     s = StockObj(3)
-    s.stockGet("0059", 12)
-    print s.stockdata
+    #s.stockGet("0059", 12)
+    #print s.stockdata
+    s.stock_tracing("0059")
+    '''
+    with open("Stock_id",'rb') as stockfile:
+        stock_list=stockfile.read().split()
+        for i in stock_list:
+            if len(i) == 4:
+                stock_tracing(i)
+    '''
     '''
     StockFlow(_trainingmonth = training_month,
                 _predictdate = predict_date,
                 _RSIcaldate = RSI_caldate,
                 _KDcaldate = KD_caldate)
-    
+    '''
 if __name__=="__main__":
     main()
 
