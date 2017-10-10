@@ -552,7 +552,7 @@ def main():
     predict_date = "2017/08/14"
     RSI_caldate = 9
     KD_caldate = 9
-    '''
+    
     StockFlow(_trainingmonth = training_month,
                 _predictdate = predict_date,
                 _RSIcaldate = RSI_caldate,
@@ -560,6 +560,7 @@ def main():
     '''
     update_stock_id("6625")
     showstock()
+    '''
     #s = StockObj(3)
     #s.stockGet("0059", 12)
     #print s.stockdata
