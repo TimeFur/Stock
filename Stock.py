@@ -83,10 +83,14 @@ class StockObj():
             self.stockGet(stock_id, 1)
             for date_key in self.stockdata[stock_id]:
                 stockdata[stock_id][date_key] = self.stockdata[stock_id][date_key]
+
+        f_pkl.close()
+        
+        print "%s is done" % (stock_id)
         
         #Store data
         f_pkl = open(f_pkl_name, 'wb')
-        pickle.dump(self.stockdata, f_pkl)
+        pickle.dump(stockdata, f_pkl)
         f_pkl.close()
         
     def stock_url_parse(self, stock_id, month):
@@ -121,9 +125,6 @@ class StockObj():
         return result_list
     
     def stockGet(self, s_num, month):
-
-        
-        
         #Get the exist data
         
         #Check the latest data in server
@@ -135,8 +136,8 @@ class StockObj():
 
         for i in stocklist:
 
-            time_obj=re.sub(r"\d+/",str(int(i[0][:i[0].find('/')])+1911)+"/",i[0],1)
-            time=datetime.strptime(time_obj,"%Y/%m/%d")
+            time_obj = re.sub(r"\d+/",str(int(i[0][:i[0].find('/')])+1911)+"/",i[0],1)
+            time = datetime.strptime(time_obj,"%Y/%m/%d")
             if i[6] != '--':
                 if i[6].find(',') > 0:
                     i[6] = i[6].replace(',', '')
@@ -146,8 +147,6 @@ class StockObj():
                 stock_list.append(i[6])
         #Store the data
         
-
-                
         #plt.plot(time_list,stock_list)
         #plt.show()
 
@@ -514,6 +513,15 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
             result_file.write(str(classifier_machine.machine[buy_stock['id']]["TrainScore"])+',')
             result_file.write(str(classifier_machine.machine[buy_stock['id']]["TestScore"])+'\n')
         result_file.close()
+def showstock():
+    f_pkl_name = "stock.pkl"
+        
+    f_pkl = open(f_pkl_name, 'rb')
+    stockdata = pickle.load(f_pkl)
+    for s in stockdata:
+        print s
+        print len(s)
+    f_pkl.close()
 
 def main():
     training_month = 12
@@ -524,20 +532,22 @@ def main():
     s = StockObj(3)
     #s.stockGet("0059", 12)
     #print s.stockdata
-    s.stock_tracing("0059")
-    '''
+    
     with open("Stock_id",'rb') as stockfile:
         stock_list=stockfile.read().split()
         for i in stock_list:
             if len(i) == 4:
-                stock_tracing(i)
-    '''
+                s.stock_tracing(i)
+    
     '''
     StockFlow(_trainingmonth = training_month,
                 _predictdate = predict_date,
                 _RSIcaldate = RSI_caldate,
                 _KDcaldate = KD_caldate)
     '''
+
+    #showstock()
+    
 if __name__=="__main__":
     main()
 
