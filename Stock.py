@@ -513,16 +513,24 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
             result_file.write(str(classifier_machine.machine[buy_stock['id']]["TrainScore"])+',')
             result_file.write(str(classifier_machine.machine[buy_stock['id']]["TestScore"])+'\n')
         result_file.close()
+
 def showstock():
     f_pkl_name = "stock.pkl"
         
-    f_pkl = open(f_pkl_name, 'rb')
+    f_pkl = open(f_pkl_name, 'r')
     stockdata = pickle.load(f_pkl)
     for s in stockdata:
         print s
-        print len(s)
     f_pkl.close()
-
+    
+def update_stock():
+    s = StockObj(3)
+    
+    with open("Stock_id",'rb') as stockfile:
+        stock_list=stockfile.read().split()
+        for i in stock_list:
+            if len(i) == 4:
+                s.stock_tracing(i)
 def main():
     training_month = 12
     predict_date = "2017/09/12"
@@ -530,14 +538,9 @@ def main():
     KD_caldate = 9
     
     s = StockObj(3)
+    
     #s.stockGet("0059", 12)
     #print s.stockdata
-    
-    with open("Stock_id",'rb') as stockfile:
-        stock_list=stockfile.read().split()
-        for i in stock_list:
-            if len(i) == 4:
-                s.stock_tracing(i)
     
     '''
     StockFlow(_trainingmonth = training_month,
@@ -546,7 +549,7 @@ def main():
                 _KDcaldate = KD_caldate)
     '''
 
-    #showstock()
+    showstock()
     
 if __name__=="__main__":
     main()
