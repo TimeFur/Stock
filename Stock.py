@@ -27,6 +27,12 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 import sklearn as sk
 
 '''===========================
+        Defination
+==========================='''
+pkl_name = "./stock.pkl"
+
+
+'''===========================
         Log Decorate
 ==========================='''
 def showlog(func):
@@ -65,11 +71,11 @@ class StockObj():
         return stock_all
 
     def stock_tracing(self, stock_id):
-        f_pkl_name = "stock.pkl"
+        f_pkl_name = pkl_name
         stockdata = {}
         #Tracing status
         try:
-            f_pkl = open(f_pkl_name, 'rb')
+            f_pkl = open(f_pkl_name, 'r')
             stockdata = pickle.load(f_pkl)
         except:
             f_pkl = open(f_pkl_name, 'wb')
@@ -185,12 +191,12 @@ class StockObj():
                 diff = float(self.stockdata[s_num][list_key[d_index]]) - float(self.stockdata[s_num][date])
                 if diff >= earn:
                     #print "Earn money at %s, value=%s" % (list_key[d_index], self.stockdata[s_num][list_key[d_index]])
-                    Earn_Flag=True
+                    Earn_Flag = True
 
             if Earn_Flag == True:
-                self.OutputData[s_num][date]=1
+                self.OutputData[s_num][date] = 1
             else:
-                self.OutputData[s_num][date]=0
+                self.OutputData[s_num][date] = 0
 
         return self.OutputData
 
@@ -216,7 +222,7 @@ class StockObj():
         RSV=0
         ex_RSV=0
 
-        while(len(list_key) > calday+count_day):
+        while(len(list_key) > calday + count_day):
             max_stock=0
             min_stock=0xFFFF
             avg_v=0.0
@@ -449,25 +455,30 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
     RSI_caldate = _RSIcaldate
     KD_caldate = _KDcaldate
 
-    s=StockObj(get_month = training_month) #Get stock raw data
+    s = StockObj(get_month = training_month) #Get stock raw data
 
     Buy_list=[]
     stock_all_no=[]
 
     with open("Stock_id",'rb') as stockfile:
+        f_pkl_name = pkl_name
+        
+        f_pkl = open(f_pkl_name, 'r')
+        s.stockdata = pickle.load(f_pkl)
+        f_pkl.close()
 
         #Get Stock id to insert to stock_all_no dict
         stock_list=stockfile.read().split()
         for i in stock_list:
             if len(i) == 4:
                 stock_all_no.append({"id":i})
-
+        
         #Stock Info set (Input/Output),
         #Input=>Evaluate parameter
         #Output=>Evalaute buy/Not buy
         for stock_list in stock_all_no:
 
-            Stock_id=stock_list['id']
+            Stock_id = stock_list['id']
             print "Get %s Stock Data" % (Stock_id)
             #Input & Output
             s.cal_RSIBox(Stock_id, RSI_caldate)
@@ -515,7 +526,7 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
         result_file.close()
 
 def showstock():
-    f_pkl_name = "stock.pkl"
+    f_pkl_name = pkl_name
         
     f_pkl = open(f_pkl_name, 'r')
     stockdata = pickle.load(f_pkl)
@@ -531,25 +542,27 @@ def update_stock():
         for i in stock_list:
             if len(i) == 4:
                 s.stock_tracing(i)
+                
+def update_stock_id(s_id):
+    s = StockObj(3)
+    s.stock_tracing(s_id)
+    
 def main():
-    training_month = 12
-    predict_date = "2017/09/12"
+    training_month = 3 * 12
+    predict_date = "2017/08/14"
     RSI_caldate = 9
     KD_caldate = 9
-    
-    s = StockObj(3)
-    
-    #s.stockGet("0059", 12)
-    #print s.stockdata
-    
     '''
     StockFlow(_trainingmonth = training_month,
                 _predictdate = predict_date,
                 _RSIcaldate = RSI_caldate,
                 _KDcaldate = KD_caldate)
     '''
-
+    update_stock_id("6625")
     showstock()
+    #s = StockObj(3)
+    #s.stockGet("0059", 12)
+    #print s.stockdata
     
 if __name__=="__main__":
     main()
