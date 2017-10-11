@@ -180,7 +180,7 @@ class StockObj():
             self.stockGet(s_num, self.get_month)
 
         list_key = self.stockdata[s_num].keys()
-
+        
         #--------Eval
         for i, date in enumerate(list_key):
             Earn_Flag = False
@@ -188,11 +188,12 @@ class StockObj():
                 break
 
             for d_index in range(i + 1, i + countday + 1):
+                
                 diff = float(self.stockdata[s_num][list_key[d_index]]) - float(self.stockdata[s_num][date])
                 if diff >= earn:
                     #print "Earn money at %s, value=%s" % (list_key[d_index], self.stockdata[s_num][list_key[d_index]])
                     Earn_Flag = True
-
+            #print date, float(self.stockdata[s_num][date])
             if Earn_Flag == True:
                 self.OutputData[s_num][date] = 1
             else:
@@ -354,7 +355,7 @@ class ClassifyObj():
         def Train(self, Stock_id, mlp = None, mlp_name = None):
                 list_input_data=[]
                 list_output_data=[]
-
+                
                 for day in self.OutputData[Stock_id]:
                     if self.InputData[Stock_id].has_key(day) == True:
 
@@ -378,7 +379,6 @@ class ClassifyObj():
 
                 Test_X = np.array(list_input_data[train_len:])
                 Test_Y = np.array(list_output_data[train_len:])
-
                 #print "Training sample number=%d, Total sample = %d" % (train_len, sample_length)
                 if len(list_output_data) == list_output_data.count(0) or len(list_output_data) == list_output_data.count(0):
                     print "list_output_data is zero"
@@ -468,17 +468,32 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
         f_pkl.close()
 
         #Get Stock id to insert to stock_all_no dict
+        
         stock_list=stockfile.read().split()
         for i in stock_list:
             if len(i) == 4:
                 stock_all_no.append({"id":i})
         
+        #stock_all_no.append({"id":"2617"})
+        
         #Stock Info set (Input/Output),
         #Input=>Evaluate parameter
         #Output=>Evalaute buy/Not buy
         for stock_list in stock_all_no:
-
+            
             Stock_id = stock_list['id']
+            
+            #sorted by date
+            d = []
+            for day in s.stockdata[Stock_id]:
+                d.append((day, s.stockdata[Stock_id][day]))
+            dd = sorted(d, key = lambda x : x[0])
+            s.stockdata[Stock_id] = OrderedDict()
+            for i in dd:
+                #print i[0], i[1]
+                s.stockdata[Stock_id][i[0]] = float(i[1])
+            
+            
             print "Get %s Stock Data" % (Stock_id)
             #Input & Output
             s.cal_RSIBox(Stock_id, RSI_caldate)
@@ -486,7 +501,7 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
             Input = s.InputData
             Output = s.cal_BuyorNotbuy(Stock_id, earn=10, countday=14)
         print "------------------Get done-----------------------"
-                
+        
         #Classifier Training
         classifier_machine = ClassifyObj(s.InputData, s.OutputData)
         #r = all(value == 0 for value in s.OutputData.values())
@@ -549,7 +564,7 @@ def update_stock_id(s_id):
     
 def main():
     training_month = 3 * 12
-    predict_date = "2017/08/14"
+    predict_date = "2017/06/08"
     RSI_caldate = 9
     KD_caldate = 9
     
