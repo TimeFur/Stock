@@ -428,14 +428,17 @@ class ClassifyObj():
                 return Buy_list
 
         def predict(self, Stock_id, day, mlp_name = None):
+
+            if mlp_name == None:
+                mlp_name = "Neural Network"
+
             if self.machine.has_key(Stock_id) == False:
                 print "No this Stock Data"
                 return False
             if self.machine[Stock_id].has_key(mlp_name) == False:
                 print "No this machine"
                 return False
-            if mlp_name == None:
-                mlp_name = "Neural Network"
+            
             #=============================================Predict
             predict=[]
             if self.InputData[Stock_id].has_key(day) == True:
@@ -443,7 +446,7 @@ class ClassifyObj():
                     predict.append(self.InputData[Stock_id][day][k])
                 predict_array=np.array(predict)
                 predict_array=predict_array.reshape(1, -1) # Trasfer to sigle sample pattern
-                print self.machine[Stock_id][mlp_name]["machine"].predict(predict_array)
+                #print self.machine[Stock_id][mlp_name]["machine"].predict(predict_array)
                 return self.machine[Stock_id][mlp_name]["machine"].predict(predict_array)
             else:
                 print "There is no stock this day %s" % (day)
@@ -531,13 +534,15 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
         result_file.write(predict_date+'\n')
         for buy_stock in Buy_list:
             print "These can buy"
+            mlp = classifier_machine.machine[buy_stock['id']].keys()[0]
+            print mlp
             print "Stock id %s, Training Score=%f, Testing Score=%f" % (    buy_stock['id'],
-                                                                                        classifier_machine.machine[buy_stock['id']]["TrainScore"],
-                                                                                        classifier_machine.machine[buy_stock['id']]["TestScore"])
+                                                                            classifier_machine.machine[buy_stock['id']][mlp]['TrainScore'],
+                                                                            classifier_machine.machine[buy_stock['id']][mlp]["TestScore"])
             result_file.write(buy_stock['id']+',')
             result_file.write(str(s.stockdata[buy_stock['id']][predict_date])+',')
-            result_file.write(str(classifier_machine.machine[buy_stock['id']]["TrainScore"])+',')
-            result_file.write(str(classifier_machine.machine[buy_stock['id']]["TestScore"])+'\n')
+            result_file.write(str(classifier_machine.machine[buy_stock['id']][mlp]['TrainScore'])+',')
+            result_file.write(str(classifier_machine.machine[buy_stock['id']][mlp]["TestScore"])+'\n')
         result_file.close()
 
 def showstock():
