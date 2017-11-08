@@ -70,16 +70,18 @@ class StockObj():
 
         return stock_all
 
-    def stock_tracing(self, stock_id):
+    def stock_tracing(self, stock_id, load_stockdata):
         f_pkl_name = pkl_name
         stockdata = {}
         #Tracing status
+        '''
         try:
             f_pkl = open(f_pkl_name, 'r')
             stockdata = pickle.load(f_pkl)
         except:
             f_pkl = open(f_pkl_name, 'wb')
-        
+        '''
+        stockdata = load_stockdata
         if stockdata.has_key(stock_id) == False:
             #create the new stock data
             self.stockGet(stock_id, 12 * 3)
@@ -90,7 +92,7 @@ class StockObj():
             for date_key in self.stockdata[stock_id]:
                 stockdata[stock_id][date_key] = self.stockdata[stock_id][date_key]
 
-        f_pkl.close()
+        #f_pkl.close()
         
         print "%s is done" % (stock_id)
         
@@ -545,29 +547,44 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
             result_file.write(str(classifier_machine.machine[buy_stock['id']][mlp]["TestScore"])+'\n')
         result_file.close()
 
-def showstock():
+def showstock(s_id):
     f_pkl_name = pkl_name
         
     f_pkl = open(f_pkl_name, 'r')
     stockdata = pickle.load(f_pkl)
     for s in stockdata:
-        print s
+        if s == s_id:
+            print stockdata[s_id]
     f_pkl.close()
     
 def update_stock():
     s = StockObj(3)
-    
+    stockdata = {}
+    try:
+        f_pkl = open(pkl_name, 'r')
+        stockdata = pickle.load(f_pkl)
+    except:
+        f_pkl = open(pkl_name, 'wb')
+
     with open("Stock_id",'rb') as stockfile:
-        stock_list=stockfile.read().split()
+        stock_list = stockfile.read().split()
+        
         for i in stock_list:
             if len(i) == 4:
-                s.stock_tracing(i)
+                s.stock_tracing(i, stockdata)
                 
 def update_stock_id(s_id):
     s = StockObj(3)
-    s.stock_tracing(s_id)
+    stockdata = {}
+    try:
+        f_pkl = open(pkl_name, 'r')
+        stockdata = pickle.load(f_pkl)
+    except:
+        f_pkl = open(pkl_name, 'wb')
+    s.stock_tracing(s_id, stockdata)
     
 def main():
+    '''
     training_month = 3 * 12
     predict_date = "2017/06/08"
     RSI_caldate = 9
@@ -578,8 +595,12 @@ def main():
                 _RSIcaldate = RSI_caldate,
                 _KDcaldate = KD_caldate)
     '''
-    update_stock_id("6625")
-    showstock()
+
+    update_stock()
+    
+    '''
+    update_stock_id("0059")
+    #showstock("0059")
     '''
     #s = StockObj(3)
     #s.stockGet("0059", 12)
