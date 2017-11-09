@@ -10,6 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 import copy
 import pickle
+import threading
 
 from collections import OrderedDict
 from grs import Stock
@@ -73,6 +74,29 @@ class StockObj():
     def stock_tracing(self, stock_id, load_stockdata):
         f_pkl_name = pkl_name
         stockdata = {}
+        
+        #Tracing status
+        stockdata = load_stockdata
+        if stockdata.has_key(stock_id) == False:
+            #create the new stock data
+            self.stockGet(stock_id, 12 * 3)
+            stockdata[stock_id] = self.stockdata[stock_id]
+        else:
+            #update the stock data
+            self.stockGet(stock_id, 1)
+            for date_key in self.stockdata[stock_id]:
+                stockdata[stock_id][date_key] = self.stockdata[stock_id][date_key]
+
+        print "%s is done" % (stock_id)
+        '''
+        #Store data
+        f_pkl = open(f_pkl_name, 'wb')
+        pickle.dump(stockdata, f_pkl)
+        f_pkl.close()
+        '''
+    def stock_tracing_thread(self, stock_id, load_stockdata, lcok):
+        f_pkl_name = pkl_name
+        stockdata = {}
         #Tracing status
         '''
         try:
@@ -95,12 +119,13 @@ class StockObj():
         #f_pkl.close()
         
         print "%s is done" % (stock_id)
-        
+
+        '''
         #Store data
         f_pkl = open(f_pkl_name, 'wb')
         pickle.dump(stockdata, f_pkl)
         f_pkl.close()
-        
+        '''
     def stock_url_parse(self, stock_id, month):
 
         url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"        
@@ -560,19 +585,29 @@ def showstock(s_id):
 def update_stock():
     s = StockObj(3)
     stockdata = {}
+    f_pkl = None
+    
+    #Load the previous data
     try:
         f_pkl = open(pkl_name, 'r')
         stockdata = pickle.load(f_pkl)
     except:
         f_pkl = open(pkl_name, 'wb')
-
+    f_pkl.close()
+    
+    #Tracing stock data
     with open("Stock_id",'rb') as stockfile:
         stock_list = stockfile.read().split()
         
         for i in stock_list:
             if len(i) == 4:
                 s.stock_tracing(i, stockdata)
-                
+
+    #Dump data to pkl
+    f_pkl = open(f_pkl_name, 'wb')
+    pickle.dump(s.stockdata, f_pkl)
+    f_pkl.close()
+
 def update_stock_id(s_id):
     s = StockObj(3)
     stockdata = {}
@@ -596,7 +631,7 @@ def main():
                 _KDcaldate = KD_caldate)
     '''
 
-    #update_stock()
+    update_stock()
     
     '''
     update_stock_id("0059")
@@ -605,7 +640,7 @@ def main():
     #s = StockObj(3)
     #s.stockGet("0059", 12)
     #print s.stockdata
-    
+    pass
 if __name__=="__main__":
     main()
 
