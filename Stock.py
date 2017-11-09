@@ -31,7 +31,7 @@ import sklearn as sk
         Defination
 ==========================='''
 pkl_name = "./stock.pkl"
-
+stock_url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"
 
 '''===========================
         Log Decorate
@@ -95,41 +95,25 @@ class StockObj():
         pickle.dump(stockdata, f_pkl)
         f_pkl.close()
         '''
+        
     def stock_tracing_thread(self, stock_id, load_stockdata, lcok):
         f_pkl_name = pkl_name
         stockdata = {}
+        
         #Tracing status
-        '''
-        try:
-            f_pkl = open(f_pkl_name, 'r')
-            stockdata = pickle.load(f_pkl)
-        except:
-            f_pkl = open(f_pkl_name, 'wb')
-        '''
         stockdata = load_stockdata
         if stockdata.has_key(stock_id) == False:
             #create the new stock data
-            self.stockGet(stock_id, 12 * 3)
-            stockdata[stock_id] = self.stockdata[stock_id]
+            self.stockGet_thread(stock_id, 12 * 3, lcok)
         else:
             #update the stock data
-            self.stockGet(stock_id, 1)
-            for date_key in self.stockdata[stock_id]:
-                stockdata[stock_id][date_key] = self.stockdata[stock_id][date_key]
-
-        #f_pkl.close()
+            self.stockGet_thread(stock_id, 1, lcok)
         
         print "%s is done" % (stock_id)
 
-        '''
-        #Store data
-        f_pkl = open(f_pkl_name, 'wb')
-        pickle.dump(stockdata, f_pkl)
-        f_pkl.close()
-        '''
     def stock_url_parse(self, stock_id, month):
 
-        url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"        
+        url = stock_url
         str_month = lambda d : ('0' + str(d.month)) if d.month < 10 else str(d.month)
         dateinfo = datetime.now()
         result_list = []
@@ -188,7 +172,34 @@ class StockObj():
         #        for  d in self.stockdata[stock_num]:
         #                print d,self.stockdata[stock_num][d]
 
+    def stockGet_thread(self, s_num, month, lock):
+        #Get the exist data
+        
+        #Check the latest data in server
+        stocklist = self.stock_url_parse(s_num, month)
+        time_list = []
+        stock_list = []
 
+        if self.stockdata.has_key(s_num) == False:
+            lock.acquire()
+            self.stockdata[s_num] = OrderedDict()
+            lock.release()
+            
+        for i in stocklist:
+
+            time_obj = re.sub(r"\d+/",str(int(i[0][:i[0].find('/')])+1911)+"/",i[0],1)
+            time = datetime.strptime(time_obj,"%Y/%m/%d")
+            if i[6] != '--':
+                if i[6].find(',') > 0:
+                    i[6] = i[6].replace(',', '')
+
+                lock.acquire()
+                self.stockdata[s_num][time_obj]=float(i[6])
+                lock.release()
+                
+                time_list.append(time)
+                stock_list.append(i[6])
+                
     def buyStock(self, s_num, date, count):    #("2330","2016/12/12",3)
         if self.stockdata.has_key(s_num):
             pay=float(self.stockdata[s_num][date])*count*1000
@@ -586,7 +597,7 @@ def showstock(s_id):
 def update_stock():
     s = StockObj(3)
     stockdata = {}
-    f_pkl = None
+    f_pkl = None    
     
     #Load the previous data
     try:
@@ -609,6 +620,44 @@ def update_stock():
     pickle.dump(s.stockdata, f_pkl)
     f_pkl.close()
 
+def update_stock_thread():
+    s = StockObj(3)
+    stockdata = {}
+    f_pkl = None
+    lock = threading.Lock()
+    
+    #Load the previous data
+    try:
+        f_pkl = open(pkl_name, 'r')
+        stockdata = pickle.load(f_pkl)
+    except:
+        f_pkl = open(pkl_name, 'wb')
+    f_pkl.close()
+    
+    #Tracing stock data
+    with open("Stock_id",'rb') as stockfile:
+        stock_list = stockfile.read().split()
+        que_thread = []
+        
+        for i in stock_list:
+
+            #Insert thread and start
+            if len(i) == 4 and len(que_thread) < 4:
+                t = threading.Thread(target = s.stock_tracing_thread,
+                                     args = (i, stockdata, lock))
+                que_thread.append(t)
+                t.start()
+                
+            #Release thread
+            for _thread in que_thread:
+                if _thread.isAlive() == False:
+                    que_thread.pop(_thread)
+
+    #Dump data to pkl
+    f_pkl = open(f_pkl_name, 'wb')
+    pickle.dump(s.stockdata, f_pkl)
+    f_pkl.close()
+    
 def update_stock_id(s_id):
     s = StockObj(3)
     stockdata = {}
@@ -620,9 +669,9 @@ def update_stock_id(s_id):
     s.stock_tracing(s_id, stockdata)
     
 def main():
-    '''
+    
     training_month = 3 * 12
-    predict_date = "2017/06/08"
+    predict_date = "2017/11/09"
     RSI_caldate = 9
     KD_caldate = 9
     
@@ -630,9 +679,9 @@ def main():
                 _predictdate = predict_date,
                 _RSIcaldate = RSI_caldate,
                 _KDcaldate = KD_caldate)
-    '''
+    
 
-    update_stock()
+    #update_stock()
     
     '''
     update_stock_id("0059")
