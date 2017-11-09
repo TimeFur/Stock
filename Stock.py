@@ -596,7 +596,7 @@ def main():
                 _KDcaldate = KD_caldate)
     '''
 
-    update_stock()
+    #update_stock()
     
     '''
     update_stock_id("0059")
