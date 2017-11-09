@@ -80,13 +80,14 @@ class StockObj():
         if stockdata.has_key(stock_id) == False:
             #create the new stock data
             self.stockGet(stock_id, 12 * 3)
-            stockdata[stock_id] = self.stockdata[stock_id]
+            #stockdata[stock_id] = self.stockdata[stock_id]
         else:
             #update the stock data
             self.stockGet(stock_id, 1)
+            '''
             for date_key in self.stockdata[stock_id]:
                 stockdata[stock_id][date_key] = self.stockdata[stock_id][date_key]
-
+            '''
         print "%s is done" % (stock_id)
         '''
         #Store data
