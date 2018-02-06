@@ -13,8 +13,8 @@ import pickle
 import threading
 
 from collections import OrderedDict
-from grs import Stock
-from grs import TWSENo
+#from grs import Stock
+#from grs import TWSENo
 
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -40,14 +40,14 @@ def showlog(func):
     def d_f(*argv):
         result=func(*argv)
         for i in result:
-            print i
+            print (i)
     
         return result
     return d_f
 
 class StockObj():
     def __init__ (self, get_month):
-        print "Stock"
+        print ("Stock")
 
         self.stockdata=OrderedDict()
         self.today=datetime.now().strftime("%Y/%m/%d")
@@ -77,7 +77,7 @@ class StockObj():
         
         #Tracing status
         stockdata = load_stockdata
-        if stockdata.has_key(stock_id) == False:
+        if stock_id in stockdata == False:
             #create the new stock data
             self.stockGet(stock_id, 12 * 3)
             #stockdata[stock_id] = self.stockdata[stock_id]
@@ -88,7 +88,7 @@ class StockObj():
             for date_key in self.stockdata[stock_id]:
                 stockdata[stock_id][date_key] = self.stockdata[stock_id][date_key]
             '''
-        print "%s is done" % (stock_id)
+        print ("%s is done" % (stock_id))
         '''
         #Store data
         f_pkl = open(f_pkl_name, 'wb')
@@ -102,14 +102,14 @@ class StockObj():
         
         #Tracing status
         stockdata = load_stockdata
-        if stockdata.has_key(stock_id) == False:
+        if stock_id in stockdata == False:
             #create the new stock data
             self.stockGet_thread(stock_id, 12 * 3, lcok)
         else:
             #update the stock data
             self.stockGet_thread(stock_id, 1, lcok)
         
-        print "%s is done" % (stock_id)
+        print ("%s is done" % (stock_id))
 
     def stock_url_parse(self, stock_id, month):
 
@@ -180,7 +180,7 @@ class StockObj():
         time_list = []
         stock_list = []
 
-        if self.stockdata.has_key(s_num) == False:
+        if s_num in self.stockdata == False:
             lock.acquire()
             self.stockdata[s_num] = OrderedDict()
             lock.release()
@@ -201,21 +201,21 @@ class StockObj():
                 stock_list.append(i[6])
                 
     def buyStock(self, s_num, date, count):    #("2330","2016/12/12",3)
-        if self.stockdata.has_key(s_num):
+        if s_num in self.stockdata == True:
             pay=float(self.stockdata[s_num][date])*count*1000
-            print "You have to pay:",pay
+            print ("You have to pay:",pay)
         else:
             self.stockGet(s_num,3)
             pay=float(self.stockdata[s_num][date])*count*1000
-            print "You have to pay:",pay
+            print ("You have to pay:",pay)
 
     def cal_BuyorNotbuy(self, s_num, earn, countday):
 
-        if self.OutputData.has_key(s_num) == False:
+        if s_num in self.OutputData == False:
             self.OutputData[s_num]=OrderedDict()
 
         #--------Check Data retrieve & parameter reasonable
-        if self.stockdata.has_key(s_num) == False:
+        if s_num in self.stockdata == False:
             self.stockGet(s_num, self.get_month)
 
         list_key = self.stockdata[s_num].keys()
@@ -245,11 +245,11 @@ class StockObj():
         K=50.0
         D=50.0
 
-        if self.InputData.has_key(s_num) == False:
+        if s_num in self.InputData == False:
             self.InputData[s_num]=OrderedDict()
 
         #============Check date
-        if self.stockdata.has_key(s_num)==False:
+        if s_num in self.stockdata ==False:
             self.stockGet(s_num,self.get_month)
 
         list_key=self.stockdata[s_num].keys()
@@ -289,7 +289,7 @@ class StockObj():
 
             #yield "Date:%s CurStock=%f, RSV=%s, K=%f D=%f (min=%f, max=%f)" % (list_key[calday+count_day],self.stockdata[s_num][list_key[calday+count_day]], RSV, now_K, now_D, min_stock, max_stock),
 
-            if self.InputData[s_num].has_key(list_key[calday+count_day]) == False:
+            if list_key[calday+count_day] in self.InputData[s_num] == False:
                 self.InputData[s_num][list_key[calday+count_day]] = OrderedDict()
 
             self.InputData[s_num][list_key[calday+count_day]]["CurStock"] = self.stockdata[s_num][list_key[calday+count_day]]
@@ -303,16 +303,16 @@ class StockObj():
         return self.InputData
 
     def cal_RSIBox(self, Stock_id, calday):
-        if self.InputData.has_key(Stock_id) == False:
+        if Stock_id in self.InputData == False:
             self.InputData[Stock_id]=OrderedDict()
 
         #============Check date
-        if self.stockdata.has_key(Stock_id) == False:
+        if Stock_id in self.stockdata == False:
             self.stockGet(Stock_id,self.get_month)
 
         list_key = self.stockdata[Stock_id].keys()
         if(len(list_key)<calday):
-            print "Calday is too long, list len=%d" % (len(list_key))
+            print ("Calday is too long, list len=%d" % (len(list_key)))
             return False
 
         #=================
@@ -334,7 +334,7 @@ class StockObj():
             pos_per = float(pos_sum) / float(calday)
             neg_per = float(neg_sum) / float(calday)
 
-            if self.InputData[Stock_id].has_key(list_key[calday+count]) == False:
+            if list_key[calday+count] in self.InputData[Stock_id] == False:
                 self.InputData[Stock_id][list_key[calday+count]] = OrderedDict()
             if pos_per!=0 or neg_per!=0:
                 RSI = pos_per/(pos_per + neg_per)
@@ -351,7 +351,7 @@ class StockObj():
 class ClassifyObj():
 
         def __init__ (self, Input, Output):
-            print "Classifier"
+            print ("Classifier")
 
             self.InputData=Input
             self.OutputData=Output
@@ -378,17 +378,17 @@ class ClassifyObj():
         def training_each_classifiers(self, Stock_id):
                 done_flag = 0
                 for n, mlp in zip(self.c_names, self.classifiers):
-                        print "==================%s===============" % (n)
+                        print ("==================%s===============" % (n))
                         try:
                                 fitting_result = self.Train(Stock_id, mlp, n)
                                 if fitting_result == 0:
                                         done_flag = 0
-                                        print "No need to train"
+                                        print ("No need to train")
                                         break
                                 elif fitting_result == 1:
                                         done_flag = 1
                         except:
-                                print "==========Error========%s" % (n)
+                                print ("==========Error========%s" % (n))
                 return done_flag
 
         def Train(self, Stock_id, mlp = None, mlp_name = None):
@@ -396,7 +396,7 @@ class ClassifyObj():
                 list_output_data=[]
                 
                 for day in self.OutputData[Stock_id]:
-                    if self.InputData[Stock_id].has_key(day) == True:
+                    if day in self.InputData[Stock_id] == True:
 
                         #Get Input Data
                         tmp_input=[]
@@ -420,7 +420,7 @@ class ClassifyObj():
                 Test_Y = np.array(list_output_data[train_len:])
                 #print "Training sample number=%d, Total sample = %d" % (train_len, sample_length)
                 if len(list_output_data) == list_output_data.count(0) or len(list_output_data) == list_output_data.count(0):
-                    print "list_output_data is zero"
+                    print ("list_output_data is zero")
                     return 0
                 #=============================================Learning & Training
                 if mlp == None:
@@ -439,8 +439,8 @@ class ClassifyObj():
 
                 TrainScore = mlp.score(Train_X,Train_Y)
                 TestScore = mlp.score(Test_X,Test_Y)
-                print "Score Training=",TrainScore
-                print "Score Test=",TestScore
+                print ("Score Training=",TrainScore)
+                print ("Score Test=",TestScore)
 
                 self.machine[Stock_id]=OrderedDict()
                 self.machine[Stock_id][mlp_name] = OrderedDict()
@@ -455,14 +455,14 @@ class ClassifyObj():
                 Buy_list = []
                 buy_flag = 0
                 for n, mlp in zip(self.c_names, self.classifiers):
-                        print "==================%s===============" % (n)
+                        print ("==================%s===============" % (n))
                         try:
                                 predict_result = self.predict(Stock_id, day, n)
                                 if predict_result[0] == 1:
                                         buy_flag = 1
                                         Buy_list.append({"id":Stock_id})
                         except:
-                                print "==========Error========%s" % (n)
+                                print ("==========Error========%s" % (n))
 
                 return Buy_list
 
@@ -471,16 +471,16 @@ class ClassifyObj():
             if mlp_name == None:
                 mlp_name = "Neural Network"
 
-            if self.machine.has_key(Stock_id) == False:
-                print "No this Stock Data"
+            if Stock_id in self.machine == False:
+                print ("No this Stock Data")
                 return False
-            if self.machine[Stock_id].has_key(mlp_name) == False:
-                print "No this machine"
+            if mlp_name in self.machine[Stock_id] == False:
+                print ("No this machine")
                 return False
             
             #=============================================Predict
             predict=[]
-            if self.InputData[Stock_id].has_key(day) == True:
+            if day in self.InputData[Stock_id] == True:
                 for k in self.InputData[Stock_id][day]:
                     predict.append(self.InputData[Stock_id][day][k])
                 predict_array=np.array(predict)
@@ -488,7 +488,7 @@ class ClassifyObj():
                 #print self.machine[Stock_id][mlp_name]["machine"].predict(predict_array)
                 return self.machine[Stock_id][mlp_name]["machine"].predict(predict_array)
             else:
-                print "There is no stock this day %s" % (day)
+                print ("There is no stock this day %s" % (day))
 
 def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
 
@@ -536,13 +536,13 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
                 s.stockdata[Stock_id][i[0]] = float(i[1])
             
             
-            print "Get %s Stock Data" % (Stock_id)
+            print ("Get %s Stock Data" % (Stock_id))
             #Input & Output
             s.cal_RSIBox(Stock_id, RSI_caldate)
             s.cal_KDBox(Stock_id, KD_caldate)
             Input = s.InputData
             Output = s.cal_BuyorNotbuy(Stock_id, earn=10, countday=14)
-        print "------------------Get done-----------------------"
+        print ("------------------Get done-----------------------")
         
         #Classifier Training
         classifier_machine = ClassifyObj(s.InputData, s.OutputData)
@@ -561,7 +561,7 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
             #--------------------Predict for date
 
             result = classifier_machine.predict(Stock_id, predict_date)
-            print result
+            print (result)
             if result == 1:
                 Buy_list.append({"id":Stock_id})
             '''
@@ -572,12 +572,12 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
         result_file = open(re.sub("/", "-", predict_date)+".txt",'wb')
         result_file.write(predict_date+'\n')
         for buy_stock in Buy_list:
-            print "These can buy"
+            print ("These can buy")
             mlp = classifier_machine.machine[buy_stock['id']].keys()[0]
-            print mlp
-            print "Stock id %s, Training Score=%f, Testing Score=%f" % (    buy_stock['id'],
+            print (mlp)
+            print ("Stock id %s, Training Score=%f, Testing Score=%f" % (    buy_stock['id'],
                                                                             classifier_machine.machine[buy_stock['id']][mlp]['TrainScore'],
-                                                                            classifier_machine.machine[buy_stock['id']][mlp]["TestScore"])
+                                                                            classifier_machine.machine[buy_stock['id']][mlp]["TestScore"]))
             result_file.write(buy_stock['id']+',')
             result_file.write(str(s.stockdata[buy_stock['id']][predict_date])+',')
             result_file.write(str(classifier_machine.machine[buy_stock['id']][mlp]['TrainScore'])+',')
@@ -591,7 +591,7 @@ def showstock(s_id):
     stockdata = pickle.load(f_pkl)
     for s in stockdata:
         if s == s_id:
-            print stockdata[s_id]
+            print (stockdata[s_id])
     f_pkl.close()
     
 def update_stock():
@@ -674,14 +674,14 @@ def main():
     predict_date = "2017/11/09"
     RSI_caldate = 9
     KD_caldate = 9
-    
+    '''
     StockFlow(_trainingmonth = training_month,
                 _predictdate = predict_date,
                 _RSIcaldate = RSI_caldate,
                 _KDcaldate = KD_caldate)
     
-
-    #update_stock()
+    '''
+    update_stock()
     
     '''
     update_stock_id("0059")
