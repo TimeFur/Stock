@@ -5,6 +5,7 @@ from numpy import *
 import matplotlib.pyplot as plt
 
 from datetime import *
+from time import sleep
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -32,6 +33,14 @@ import sklearn as sk
 ==========================='''
 pkl_name = "./stock.pkl"
 stock_url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"
+Proxies = [
+  {"http": "http://10.10.1.10:3128/"},
+  {"http": "http://10.10.1.10:1080/"},
+  {"http": "http://10.10.1.10:5421/"},
+]
+proxies_0 = {
+  "http": "91.74.133.171:80",
+}
 
 '''===========================
         Log Decorate
@@ -49,6 +58,8 @@ class StockObj():
     def __init__ (self, get_month):
         print ("Stock")
 
+        self.session = requests.Session()
+        self.prox_id = 0
         self.stockdata=OrderedDict()
         self.today=datetime.now().strftime("%Y/%m/%d")
         self.get_month=get_month
@@ -127,7 +138,10 @@ class StockObj():
             payload = {'response' : 'json',
                        'date' : date,
                        'stockNo' : stock_id}
-            r = requests.get(url, params = payload)
+            r = self.session.get(url, params = payload)
+            #r = requests.get(url, params = payload)
+            sleep(3)
+            
             try:
                 #get the raw data
                 json_result = r.json()
@@ -598,7 +612,7 @@ def update_stock():
     s = StockObj(3)
     stockdata = {}
     f_pkl = None    
-    
+    f_pkl_name = pkl_name
     #Load the previous data
     try:
         f_pkl = open(pkl_name, 'r')
