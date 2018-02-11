@@ -29,18 +29,11 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 import sklearn as sk
 
 '''===========================
-        Defination
+        Definition
 ==========================='''
 pkl_name = "./stock.pkl"
 stock_url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"
-Proxies = [
-  {"http": "http://10.10.1.10:3128/"},
-  {"http": "http://10.10.1.10:1080/"},
-  {"http": "http://10.10.1.10:5421/"},
-]
-proxies_0 = {
-  "http": "91.74.133.171:80",
-}
+UPDATE_TRACE = 2 #1->update 2-> tracing
 
 '''===========================
         Log Decorate
@@ -683,20 +676,23 @@ def update_stock_id(s_id):
     s.stock_tracing(s_id, stockdata)
     
 def main():
-    
-    training_month = 3 * 12
-    predict_date = "2017/11/09"
-    RSI_caldate = 9
-    KD_caldate = 9
-    '''
-    StockFlow(_trainingmonth = training_month,
-                _predictdate = predict_date,
-                _RSIcaldate = RSI_caldate,
-                _KDcaldate = KD_caldate)
-    
-    '''
-    update_stock()
-    
+
+    if UPDATE_TRACE == 1:
+        update_stock()
+        print ("Update Done")
+    elif UPDATE_TRACE == 2:
+        
+        training_month = 3 * 12
+        predict_date = "2018/02/08"
+        RSI_caldate = 9
+        KD_caldate = 9
+        
+        StockFlow(_trainingmonth = training_month,
+                    _predictdate = predict_date,
+                    _RSIcaldate = RSI_caldate,
+                    _KDcaldate = KD_caldate)
+        print ("Tracing Done")
+        
     '''
     update_stock_id("0059")
     #showstock("0059")
@@ -704,7 +700,7 @@ def main():
     #s = StockObj(3)
     #s.stockGet("0059", 12)
     #print s.stockdata
-    pass
+    
 if __name__=="__main__":
     main()
 
