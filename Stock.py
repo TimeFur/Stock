@@ -33,7 +33,7 @@ import sklearn as sk
 ==========================='''
 pkl_name = "./stock.pkl"
 stock_url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"
-UPDATE_TRACE = 2 #1->update 2-> tracing
+UPDATE_TRACE = 1 #1->update 2-> tracing
 
 '''===========================
         Log Decorate
