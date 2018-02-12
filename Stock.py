@@ -33,7 +33,7 @@ import sklearn as sk
 ==========================='''
 pkl_name = "./stock.pkl"
 stock_url = "http://www.twse.com.tw/exchangeReport/STOCK_DAY"
-UPDATE_TRACE = 1 #1->update 2-> tracing
+UPDATE_TRACE = 2 #1->update 2-> tracing
 
 '''===========================
         Log Decorate
@@ -81,7 +81,7 @@ class StockObj():
         
         #Tracing status
         stockdata = load_stockdata
-        if stock_id in stockdata == False:
+        if (stock_id in stockdata) == False:
             #create the new stock data
             self.stockGet(stock_id, 12 * 3)
             #stockdata[stock_id] = self.stockdata[stock_id]
@@ -106,7 +106,7 @@ class StockObj():
         
         #Tracing status
         stockdata = load_stockdata
-        if stock_id in stockdata == False:
+        if (stock_id in stockdata) == False:
             #create the new stock data
             self.stockGet_thread(stock_id, 12 * 3, lcok)
         else:
@@ -187,7 +187,7 @@ class StockObj():
         time_list = []
         stock_list = []
 
-        if s_num in self.stockdata == False:
+        if (s_num in self.stockdata) == False:
             lock.acquire()
             self.stockdata[s_num] = OrderedDict()
             lock.release()
@@ -201,28 +201,28 @@ class StockObj():
                     i[6] = i[6].replace(',', '')
 
                 lock.acquire()
-                self.stockdata[s_num][time_obj]=float(i[6])
+                self.stockdata[s_num][time_obj] = float(i[6])
                 lock.release()
                 
                 time_list.append(time)
                 stock_list.append(i[6])
                 
     def buyStock(self, s_num, date, count):    #("2330","2016/12/12",3)
-        if s_num in self.stockdata == True:
-            pay=float(self.stockdata[s_num][date])*count*1000
+        if (s_num in self.stockdata) == True:
+            pay=float(self.stockdata[s_num][date]) * count * 1000
             print ("You have to pay:",pay)
         else:
             self.stockGet(s_num,3)
-            pay=float(self.stockdata[s_num][date])*count*1000
+            pay = float(self.stockdata[s_num][date]) * count * 1000
             print ("You have to pay:",pay)
 
     def cal_BuyorNotbuy(self, s_num, earn, countday):
 
-        if s_num in self.OutputData == False:
+        if (s_num in self.OutputData) == False:
             self.OutputData[s_num]=OrderedDict()
 
         #--------Check Data retrieve & parameter reasonable
-        if s_num in self.stockdata == False:
+        if (s_num in self.stockdata) == False:
             self.stockGet(s_num, self.get_month)
 
         list_key = self.stockdata[s_num].keys()
@@ -230,11 +230,11 @@ class StockObj():
         #--------Eval
         for i, date in enumerate(list_key):
             Earn_Flag = False
-            if i + countday == len(list_key):
+            if ((i + countday) >= len(list_key)):
                 break
 
             for d_index in range(i + 1, i + countday + 1):
-                
+                 
                 diff = float(self.stockdata[s_num][list_key[d_index]]) - float(self.stockdata[s_num][date])
                 if diff >= earn:
                     #print "Earn money at %s, value=%s" % (list_key[d_index], self.stockdata[s_num][list_key[d_index]])
@@ -252,15 +252,15 @@ class StockObj():
         K=50.0
         D=50.0
 
-        if s_num in self.InputData == False:
+        if (s_num in self.InputData) == False:
             self.InputData[s_num]=OrderedDict()
 
         #============Check date
-        if s_num in self.stockdata ==False:
+        if (s_num in self.stockdata) == False:
             self.stockGet(s_num,self.get_month)
 
-        list_key=self.stockdata[s_num].keys()
-        if(len(list_key)<calday):
+        list_key = self.stockdata[s_num].keys()
+        if (len(list_key) < calday):
             #yield "Calday is too long, list len=%d" % (len(list_key))
             return False
 
@@ -269,34 +269,34 @@ class StockObj():
         RSV=0
         ex_RSV=0
 
-        while(len(list_key) > calday + count_day):
-            max_stock=0
-            min_stock=0xFFFF
-            avg_v=0.0
+        while (len(list_key) > (calday + count_day)):
+            max_stock = 0
+            min_stock = 0xFFFF
+            avg_v = 0.0
             for i in range(calday):
-                v=float(self.stockdata[s_num][list_key[i+count_day]])
+                v = float(self.stockdata[s_num][list_key[i+count_day]])
                 avg_v = avg_v + v
-                if v>max_stock:
-                    max_stock=v
-                if v<min_stock:
-                    min_stock=v
+                if v > max_stock:
+                    max_stock = v
+                if v < min_stock:
+                    min_stock = v
 
-            avg_v = avg_v/calday
+            avg_v = avg_v / calday
 
-            if(max_stock!=min_stock):
-                RSV=((self.stockdata[s_num][list_key[calday+count_day]]-min_stock)/(max_stock-min_stock))*100.0
+            if (max_stock != min_stock):
+                RSV = ((self.stockdata[s_num][list_key[calday+count_day]] - min_stock) / (max_stock - min_stock)) * 100.0
             else:
-                RSV=ex_RSV
-            ex_RSV=RSV
-            now_K=K*(2.0/3.0)+RSV*(1.0/3.0)
-            now_D=D*(2.0/3.0)+now_K*(1.0/3.0)
+                RSV = ex_RSV
+            ex_RSV = RSV
+            now_K = K * (2.0/3.0) + RSV * (1.0/3.0)
+            now_D = D * (2.0/3.0) + now_K * (1.0/3.0)
 
-            K=now_K
-            D=now_D
+            K = now_K
+            D = now_D
 
             #yield "Date:%s CurStock=%f, RSV=%s, K=%f D=%f (min=%f, max=%f)" % (list_key[calday+count_day],self.stockdata[s_num][list_key[calday+count_day]], RSV, now_K, now_D, min_stock, max_stock),
 
-            if list_key[calday+count_day] in self.InputData[s_num] == False:
+            if (list_key[calday+count_day] in self.InputData[s_num]) == False:
                 self.InputData[s_num][list_key[calday+count_day]] = OrderedDict()
 
             self.InputData[s_num][list_key[calday+count_day]]["CurStock"] = self.stockdata[s_num][list_key[calday+count_day]]
@@ -305,33 +305,33 @@ class StockObj():
             self.InputData[s_num][list_key[calday+count_day]]["D"] = now_D
             self.InputData[s_num][list_key[calday+count_day]]["Avg"] = avg_v
 
-            count_day=count_day+1
+            count_day = count_day + 1
 
         return self.InputData
 
     def cal_RSIBox(self, Stock_id, calday):
-        if Stock_id in self.InputData == False:
-            self.InputData[Stock_id]=OrderedDict()
-
+        if (Stock_id in self.InputData) == False:
+            self.InputData[Stock_id] = OrderedDict()
+            
         #============Check date
-        if Stock_id in self.stockdata == False:
+        if (Stock_id in self.stockdata) == False:
             self.stockGet(Stock_id,self.get_month)
 
         list_key = self.stockdata[Stock_id].keys()
-        if(len(list_key)<calday):
-            print ("Calday is too long, list len=%d" % (len(list_key)))
+        if (len(list_key) < calday):
+            print ("Calday is too long, list len = %d" % (len(list_key)))
             return False
 
         #=================
-        count=0
-        while(len(list_key)>calday+count):
+        count = 0
+        while (len(list_key) > (calday + count)):
             pos_sum = 0
             pos_per = 0
             neg_sum = 0
             neg_per = 0
             for i in range(calday):
-                val1=self.stockdata[Stock_id][list_key[i+count]]
-                val2=self.stockdata[Stock_id][list_key[i+count+1]]
+                val1 = self.stockdata[Stock_id][list_key[i+count]]
+                val2 = self.stockdata[Stock_id][list_key[i+count+1]]
 
                 if val2 >= val1:
                     pos_sum += val2 - val1
@@ -340,19 +340,19 @@ class StockObj():
 
             pos_per = float(pos_sum) / float(calday)
             neg_per = float(neg_sum) / float(calday)
-
-            if list_key[calday+count] in self.InputData[Stock_id] == False:
+            
+            if (list_key[calday+count] in self.InputData[Stock_id]) == False:
                 self.InputData[Stock_id][list_key[calday+count]] = OrderedDict()
             if pos_per!=0 or neg_per!=0:
                 RSI = pos_per/(pos_per + neg_per)
             else:
                 RSI=0
 
-            self.InputData[Stock_id][list_key[calday+count]]["Pos_per"]=pos_per
-            self.InputData[Stock_id][list_key[calday+count]]["Neg_per"]=neg_per
-            self.InputData[Stock_id][list_key[calday+count]]["RSI"]=RSI
+            self.InputData[Stock_id][list_key[calday+count]]["Pos_per"] = pos_per
+            self.InputData[Stock_id][list_key[calday+count]]["Neg_per"] = neg_per
+            self.InputData[Stock_id][list_key[calday+count]]["RSI"] = RSI
 
-            count+=1
+            count += 1
         return self.InputData
 
 class ClassifyObj():
@@ -416,8 +416,8 @@ class ClassifyObj():
 
                         #print day, self.InputData[Stock_id][day], self.OutputData[Stock_id][day]
 
-                sample_length=len(list_input_data)
-                train_len = sample_length*(2.0/3.0)
+                sample_length = len(list_input_data)
+                train_len = sample_length * (2.0 / 3.0)
                 train_len = int(train_len)
 
                 Train_X = np.array(list_input_data[:train_len])
@@ -478,16 +478,16 @@ class ClassifyObj():
             if mlp_name == None:
                 mlp_name = "Neural Network"
 
-            if Stock_id in self.machine == False:
+            if (Stock_id in self.machine) == False:
                 print ("No this Stock Data")
                 return False
-            if mlp_name in self.machine[Stock_id] == False:
+            if (mlp_name in self.machine[Stock_id]) == False:
                 print ("No this machine")
                 return False
             
             #=============================================Predict
             predict=[]
-            if day in self.InputData[Stock_id] == True:
+            if (day in self.InputData[Stock_id]) == True:
                 for k in self.InputData[Stock_id][day]:
                     predict.append(self.InputData[Stock_id][day][k])
                 predict_array=np.array(predict)
@@ -515,7 +515,7 @@ def StockFlow(_trainingmonth, _predictdate, _RSIcaldate, _KDcaldate):
         f_pkl = open(f_pkl_name, 'r')
         s.stockdata = pickle.load(f_pkl)
         f_pkl.close()
-
+        
         #Get Stock id to insert to stock_all_no dict
         
         stock_list=stockfile.read().split()
