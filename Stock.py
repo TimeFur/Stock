@@ -683,7 +683,7 @@ def main():
     elif UPDATE_TRACE == 2:
         
         training_month = 3 * 12
-        predict_date = "2018/02/08"
+        predict_date = "2017/11/01"
         RSI_caldate = 9
         KD_caldate = 9
         
