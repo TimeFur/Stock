@@ -1,5 +1,5 @@
 import wx
-
+import adb
 
 '''================================
             DEFINE
@@ -19,8 +19,9 @@ class ADB_Frame(wx.Frame):
         wx.Frame.__init__(self, parent = None, title = "ADB monitor", size = (1000,1000))
         self.counter = 1000
 
-        #Load adb command
-                
+        #Create the adb 
+        self.adb_tool = adb
+        
         #Create panel
         self.panel = wx.Panel(self)
         self.bind_component()
@@ -49,6 +50,7 @@ class ADB_Frame(wx.Frame):
         
         self.counter += 1
         self.label[0][1].SetLabel(str(self.counter))
+        print self.adb_tool.shell('ls')
         
     def Btn_disconnect_func(self, event):
         print "DisClick"
