@@ -21,7 +21,12 @@ def shell(cmd):
     
     return p.stdout.read()
 
-def keep_listen_shell(cmd):
+'''=======================================================
+    During the process get the process msg
+    -It should set to the thread queue
+    -Set the callback function to implement other function
+======================================================='''
+def keep_listen_shell(cmd, callback = None):
     p = subprocess.Popen(cmd, shell = True, stdout = subprocess.PIPE)
     while True:
         l = p.stdout.readline()
@@ -30,7 +35,7 @@ def keep_listen_shell(cmd):
         print l
 
 try:
-    #keep_listen_shell("adb shell getevent -r")
-    keep_listen_shell("adb devices")
+    keep_listen_shell("adb shell getevent -r")
+    #keep_listen_shell("adb devices")
 except:
     pass
